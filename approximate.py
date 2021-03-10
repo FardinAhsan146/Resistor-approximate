@@ -1,7 +1,7 @@
 import mip
 from typing import List
 import re
-import pandas as pd
+
 
 
 def equivalent_tol(components: List[float], target: float, series: bool, tolerance: float, resistor: bool) -> List[float]:
@@ -76,34 +76,33 @@ def equivalent_tol(components: List[float], target: float, series: bool, toleran
 
 
 
-def list_precoressing(raw_list: List[str]):
-    """
-    Preprocess lists of strings.
-    
-    should turn the list ["5kxn"] into [5*1e3 for i in range(len(n))] for example
-    
-    """
+def list_process(list_str: List[str]):
 
-    replace_dict = {'a': '*1e-18', 'f': '*1e-15', 'p': '*1e-12',
-                    'n':   '*1e-9','u': '*1e-6',  'm': '*1e-3',
-                    'c':  '*1e-2', 'd': '*1e-1', 'da': '*1e1',
-                    'h':   '*1e2', 'k': '*1e3',   'M': '*1e6',
-                    'G':   '*1e9', 'T': '*1e12',  "P": '*1e15',
-                    'E': '*1e18'}
-    
-    data = {'Val': raw_list}
-    df = pd.DataFrame(data = data)
-    df['Val'] = df['Val'].replace(replace_dict, regex=True).map(pd.eval).astype(float)
-    return df['Val'].tolist()
+    replace_dict = {'a': '1e-18', 'f': '1e-15', 'p': '1e-12',
+                'n': '1e-9',  'u': '1e-6',  'm': '1e-3',
+                'c': '1e-2',  'd': '1e-1', 'da': '1e1',
+                'h': '1e2',   'k': '1e3',   'M': '1e6',
+                'G': '1e9',   'T': '1e12',  "P": '1e15',
+                'E': '1e18'}
 
-    #now we need to do something about the xn part of the input
+
+    regex = re.compile(r"([0-9]+)([^x]+)(x[0-9]+)?")
+    list_numbers = []
+    for string in list_str:
+        parsed = re.findall(regex, string)[0]
+        n = 1 if parsed[2] == '' else int(parsed[2].replace('x', ''))
+        list_numbers += [float(parsed[0]) * eval(replace_dict[parsed[1]])] * n 
+    return list_numbers
+        
     
 if __name__ == "__main__":
     
-
-
+    processed_list = list_process(["1kx5"])
+    
+    sol = equivalent_tol(processed_list, 5000, True, 10,True)
     sol = equivalent_tol([1, 2, 3, 4, 5, 6, 7], 11, True, 10,True)
     sol = equivalent_tol([1, 2, 3, 4, 5, 6, 7], 11, False, 10,False)
+
 
 
 
