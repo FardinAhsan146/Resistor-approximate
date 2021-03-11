@@ -2,8 +2,6 @@ import mip
 from typing import List
 import re
 
-
-
 def equivalent_tol(components: List[float], target: float, series: bool, tolerance: float, resistor: bool) -> List[float]:
     """Return list of components which in series/parallel are within tolerance
      of the target value, minimising the number of components in use.
@@ -75,8 +73,14 @@ def equivalent_tol(components: List[float], target: float, series: bool, toleran
     return r_to_use
 
 
-
 def list_process(list_str: List[str]):
+    """
+    Turns a list of strings with SI unit multipliers and number multilpiers into a list of floats.
+    For example will turn ["5kx5"] into [5000.0 for i in range(5)]
+    Idea behind this is that user input can be accepted as strings and the two multipliers will save them time given components
+    usually come 5's or 10's in most packages and the equivalent tol function works assuming there is the same number of inputs at specified. 
+    
+    """
 
     replace_dict = {'a': '1e-18', 'f': '1e-15', 'p': '1e-12',
                 'n': '1e-9',  'u': '1e-6',  'm': '1e-3',
@@ -97,12 +101,15 @@ def list_process(list_str: List[str]):
     
 if __name__ == "__main__":
     
+    """
+    Run this code block to test.
+    
     processed_list = list_process(["1kx5"])
     
     sol = equivalent_tol(processed_list, 5000, True, 10,True)
     sol = equivalent_tol([1, 2, 3, 4, 5, 6, 7], 11, True, 10,True)
     sol = equivalent_tol([1, 2, 3, 4, 5, 6, 7], 11, False, 10,False)
-
+    """
 
 
 
