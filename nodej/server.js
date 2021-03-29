@@ -1,20 +1,18 @@
-const express = require('express')
+const express = require("express");
+const app = express();
+const PORT = process.env.PORT || 3000;
+app.use(express.static("public"));
 
-const app = express()
-const PORT = process.env.PORT || 3000
-app.use(express.static('public'))
-app.get('/', (req, res) => {
-    res.send('amogus ting tong!')
+app.get('/api', (req,res) =>{
+    res.send('you DO not have permission to view page Proletariat!')
 })
-app.get('/api',(req,res)=>{
-    res.json(
-        {'qasam wallahi':'billah'}
-    )
-})
-app.post('/', (req,res)=>{
-    console.log(req.body)
-})
-app.listen(PORT, () =>{
-    console.log(`listening on http://localhost:${PORT}`);
-    console.log(`listening on http://localhost:${PORT}/index.html`);
-})
+
+app.post("/api", (req, res) => {
+    console.log(JSON.stringify(req));
+    res.json('USERINPUT SUCCESSFUL')
+});
+
+app.listen(PORT, () => {
+  console.log(`listening on http://localhost:${PORT}`);
+  console.log(`listening on http://localhost:${PORT}/index.html`);
+});
