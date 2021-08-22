@@ -78,6 +78,11 @@ def list_process(list_str: List[str]):
     regex = re.compile(r"([0-9]+)([^x]+)(x[0-9]+)?")
     list_numbers = []
     for string in list_str:
+        
+        if type(string) != str:
+            list_numbers.append(string)
+            continue
+        
         parsed = re.findall(regex, string)[0]
         n = 1 if parsed[2] == '' else int(parsed[2].replace('x', ''))
         list_numbers += [float(parsed[0]) * eval(replace_dict[parsed[1]])] * n 
@@ -89,11 +94,11 @@ if __name__ == "__main__":
       
     # Run this code block to test.
     
-    processed_list = list_process(["1kx5"])
+    processed_list = list_process(["1kx5",2000])
     
     print()
     sol = equivalent_tol(processed_list, 5000, True, 10,True)
     print()
-    sol = equivalent_tol([1, 2, 3, 4, 5, 6, 7], 11, True, 10,True)
-    print()
-    sol = equivalent_tol([1, 2, 3, 4, 5, 6, 7], 11, False, 10,False)
+    # sol = equivalent_tol([1, 2, 3, 4, 5, 6, 7], 11, True, 10,True)
+    # print()
+    # sol = equivalent_tol([1, 2, 3, 4, 5, 6, 7], 11, False, 10,False)
