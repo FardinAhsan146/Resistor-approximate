@@ -27,7 +27,6 @@ def equivalent_tol(components: List[float], target: float, series: bool, toleran
     lower = (1-tol) * target if condition else 1/((1+tol) * target)
     upper = (1+tol) * target if condition else 1/((1-tol) * target)
 
-               
     m = mip.Model()  # Create new mixed integer/linear model.
 
     r_in_use = [m.add_var(var_type=mip.BINARY) for _ in _components]
@@ -41,7 +40,6 @@ def equivalent_tol(components: List[float], target: float, series: bool, toleran
     if sol_status != mip.OptimizationStatus.OPTIMAL:
         print('No solution found')
         return []
-
 
     r_in_use_sol = [float(v) for v in r_in_use]
     r_to_use = [r for r, i in zip(components, r_in_use_sol) if i > 0]
@@ -58,7 +56,7 @@ def equivalent_tol(components: List[float], target: float, series: bool, toleran
     return r_to_use
 
 
-def list_process(list_str: List[str]):
+def list_process(list_str):
     """
     Turns a list of strings with SI unit multipliers and number multilpiers into a list of floats.
     For example will turn ["5kx5"] into [5000.0 for i in range(5)]
@@ -66,39 +64,46 @@ def list_process(list_str: List[str]):
     usually come 5's or 10's in most packages and the equivalent tol function works assuming there is the same number of inputs at specified. 
     
     """
-
     replace_dict = {'a': '1e-18', 'f': '1e-15', 'p': '1e-12',
                 'n': '1e-9',  'u': '1e-6',  'm': '1e-3',
                 'c': '1e-2',  'd': '1e-1', 'da': '1e1',
                 'h': '1e2',   'k': '1e3',   'M': '1e6',
                 'G': '1e9',   'T': '1e12',  "P": '1e15',
                 'E': '1e18'}
-
-
-    regex = re.compile(r"([0-9]+)([^x]+)(x[0-9]+)?")
+    
+    regex = re.compile(r"([0-9]+\.?[0-9]*)([^x]+)(x[0-9]+)?")
+    regex_nox = re.compile(r"([0-9]+\.?[\d]*)([^\d]*)")
     list_numbers = []
-    for string in list_str:
-        
-        if type(string) != str:
-            list_numbers.append(string)
+    for item in list_str:
+        if type(item) != str:
+            list_numbers.append(float(item))
             continue
-        
-        parsed = re.findall(regex, string)[0]
-        n = 1 if parsed[2] == '' else int(parsed[2].replace('x', ''))
-        list_numbers += [float(parsed[0]) * eval(replace_dict[parsed[1]])] * n 
+        if 'x' in item:
+            parsed = re.findall(regex, item)[0]
+            n = 1 if parsed[2] == '' else int(parsed[2].replace('x', ''))
+            list_numbers += [float(parsed[0]) * eval(replace_dict[parsed[1]])] * n 
+        else:
+            parsed = re.findall(regex_nox, item)[0]
+            n = 1 if parsed[1] == '' else eval(replace_dict[parsed[1]])
+            list_numbers += [n*float(parsed[0])] 
+            
     return list_numbers
         
     
 if __name__ == "__main__":
-    
-      
+          
+    pass
     # Run this code block to test.
     
-    processed_list = list_process(["1kx5",2000])
+    # processed_list = list_process(["1kx5",2000,'1'])
     
-    print()
-    sol = equivalent_tol(processed_list, 5000, True, 10,True)
-    print()
-    # sol = equivalent_tol([1, 2, 3, 4, 5, 6, 7], 11, True, 10,True)
     # print()
-    # sol = equivalent_tol([1, 2, 3, 4, 5, 6, 7], 11, False, 10,False)
+    # sol = equivalent_tol(processed_list, 5000, True, 10,True)
+    # print()
+    # # sol = equivalent_tol([1, 2, 3, 4, 5, 6, 7], 11, True, 10,True)
+    # # print()
+    # # sol = equivalent_tol([1, 2, 3, 4, 5, 6, 7], 11, False, 10,False)
+    
+    
+    
+    
