@@ -56,10 +56,10 @@ class Solver:
         solved_values = sum(x for x in r_to_use) if condition else 1/sum(1/x for x in r_to_use)
         solved_error = 100 * (solved_values - self.target) / self.target
             
-        print(f'{"Resistors/Inductors" if resistor else "Capacitors"}; {r_to_use} in {"series" if series else "parallel"} '
+        print(f'{"Resistors/Inductors" if self.resistor else "Capacitors"}; {r_to_use} in {"series" if self.series else "parallel"} '
               
-              f'will produce {"resistance/inductance" if resistor else "capacitance"} = {solved_values:.3f}'\
-              f' {"R/I" if resistor else "C"}. Aiming for {"R/I" if resistor else "C"} = {target:.3f}, '
+              f'will produce {"resistance/inductance" if self.resistor else "capacitance"} = {solved_values:.3f}'\
+              f' {"R/I" if self.resistor else "C"}. Aiming for {"R/I" if self.resistor else "C"} = {self.target:.3f}, '
               
               f'error of {solved_error:.2f}%')
         return r_to_use
@@ -100,15 +100,18 @@ class Solver:
     
     def minimize(self):
         
-        components_ = list_process(self.components)
-        return equivalent_tol(components_,self.target,self.series,
-                              self.tolerance,self.resistor)
+        self.components = self.list_process(self.components)
+        return self.equivalent_tol()
         
         
     
 if __name__ == "__main__":
           
-    pass
+
+    a = Solver([1, '2kx5', 3, 4, 5, 6, 7], 11, True, 10,True)
+
+    a.minimize()
+    
     # Run this code block to test.
     
     # processed_list = list_process(["1kx5",2000,'1'])
