@@ -1,10 +1,20 @@
 import mip
 import re
-from typing import List
+import json
+from flask import Flask, render_template, url_for, request, redirect
+
+# app = Flask(__name__)
+
 
 class Solver:
     
-    def __init__(self, components: List[float], target: float, series: bool, tolerance: float, resistor: bool) -> List[float]:
+    def __init__(self
+                ,components
+                ,target
+                ,series
+                ,tolerance
+                ,resistor):
+        
         self.components = components
         self.target = target
         self.series = series
@@ -99,17 +109,21 @@ class Solver:
         return list_numbers
     
     def minimize(self):
-        
         self.components = self.list_process(self.components)
-        return self.equivalent_tol()
+        self.equivalent_tol()
         
-        
+# @app.route("/<data>",methods = ['GET','POST'])
+# def root(data):
+#     res = request.json
+#     print(res)
+#     return 'Hello BITCH'
+
+    
     
 if __name__ == "__main__":
           
-
+    # app.run()
     a = Solver([1, '2kx5', 3, 4, 5, 6, 7], 11, True, 10,True)
-
     a.minimize()
     
     # Run this code block to test.
