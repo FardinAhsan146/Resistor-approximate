@@ -546,7 +546,7 @@
           </div>
         </div>
 
-        <button id="solve">&#9654; Run Simulation</button>
+        <button id="solve" style="display:none">&#9654; Run Simulation</button>
       </div>
     </div>
 
@@ -1126,6 +1126,7 @@
   });
 
   document.querySelectorAll('input:not([name="type"])').forEach(input => {
+    input.addEventListener('input', () => solveBtn.click());
     input.addEventListener('keydown', e => {
       if (e.key === 'Enter') solveBtn.click();
     });
