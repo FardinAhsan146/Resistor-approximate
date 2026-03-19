@@ -35,7 +35,7 @@ input,
 select {
     margin-bottom: 1em;
     width: 15em;
-    padding: 0.4em;
+    padding: 0.4em 1.5em 0.4em 0.4em;
     font-size: 1em;
 }
 
