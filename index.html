@@ -160,7 +160,7 @@
       margin-bottom: 0.25rem;
     }
 
-    input, select {
+    input {
       width: 100%;
       padding: 0.45rem 0.6rem;
       background: var(--bg-deep);
@@ -173,7 +173,7 @@
       box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
     }
 
-    input:focus, select:focus {
+    input:focus {
       outline: none;
       border-color: var(--accent);
       box-shadow: inset 0 1px 3px rgba(0,0,0,0.3), 0 0 0 1px var(--accent-dim);
@@ -181,14 +181,38 @@
 
     input::placeholder { color: #4a4538; }
 
-    select {
-      color: var(--text);
-      cursor: pointer;
+    .radio-group {
+      display: flex;
+      gap: 0.5rem;
     }
 
-    select option {
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.4rem 0.7rem;
       background: var(--bg-deep);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
       color: var(--text);
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .radio-option:hover {
+      border-color: var(--accent-dim);
+    }
+
+    .radio-option:has(input:checked) {
+      border-color: var(--accent);
+      background: rgba(180, 160, 100, 0.08);
+    }
+
+    .radio-option input[type="radio"] {
+      accent-color: var(--accent);
+      margin: 0;
     }
 
     .input-help {
@@ -505,11 +529,11 @@
 
         <div class="form-group">
           <label>Component Type</label>
-          <select id="type">
-            <option value="resistor">Resistor</option>
-            <option value="inductor">Inductor</option>
-            <option value="capacitor">Capacitor</option>
-          </select>
+          <div class="radio-group">
+            <label class="radio-option"><input type="radio" name="type" value="resistor" checked><span>Resistor</span></label>
+            <label class="radio-option"><input type="radio" name="type" value="inductor"><span>Inductor</span></label>
+            <label class="radio-option"><input type="radio" name="type" value="capacitor"><span>Capacitor</span></label>
+          </div>
         </div>
 
         <button id="solve">&#9654; Run Simulation</button>
@@ -1022,7 +1046,7 @@
     const componentsInput = document.getElementById('components').value;
     const targetInput = document.getElementById('target').value;
     const toleranceInput = parseFloat(document.getElementById('tolerance').value);
-    const compType = document.getElementById('type').value;
+    const compType = document.querySelector('input[name="type"]:checked').value;
     const isResistor = compType !== 'capacitor'; // resistors & inductors share math
 
     const resultCard = document.getElementById('result');
