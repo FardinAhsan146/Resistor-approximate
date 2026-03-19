@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resistor Approximator</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --border: #2a2d3a;
+      --text: #e4e4e7;
+      --text-muted: #9ca3af;
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+      --success: #22c55e;
+      --error: #ef4444;
+      --radius: 10px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    header { text-align: center; margin-bottom: 2rem; }
+    header h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.025em; margin-bottom: 0.25rem; }
+    header p { color: var(--text-muted); font-size: 0.9rem; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 560px;
+      margin-bottom: 1rem;
+    }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-group:last-of-type { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+
+    label .hint {
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: normal;
+      font-size: 0.75rem;
+      opacity: 0.7;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: border-color 0.15s;
+    }
+
+    input:focus, select:focus { outline: none; border-color: var(--accent); }
+    input::placeholder { color: #555; }
+
+    .input-help {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-top: 0.3rem;
+      opacity: 0.7;
+    }
+
+    .input-help strong {
+      color: var(--text);
+      opacity: 1;
+    }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+    button#solve {
+      width: 100%;
+      padding: 0.7rem;
+      margin-top: 1.25rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    button#solve:hover { background: var(--accent-hover); }
+    button#solve:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .result { display: none; }
+    .result.visible { display: block; }
+
+    .result-header {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .result-value { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+
+    .result-detail {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+      line-height: 1.6;
+    }
+
+    .result-formula {
+      font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
+      font-size: 0.85rem;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.6rem 0.8rem;
+      margin-top: 0.5rem;
+      overflow-x: auto;
+    }
+
+    .result-components {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.75rem;
+    }
+
+    .chip {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.3rem 0.7rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .error-msg { color: var(--error); font-size: 0.9rem; }
+    .success-value { color: var(--success); }
+
+    .circuit-svg {
+      margin-top: 0.75rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.75rem;
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+    }
+
+    .circuit-svg svg { display: block; max-width: 100%; height: auto; }
+
+    .topo-tag {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      margin-left: 0.4rem;
+      vertical-align: middle;
+    }
+
+    footer {
+      margin-top: 2rem;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 500px) {
+      .row { grid-template-columns: 1fr; }
+      body { padding: 1rem 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Resistor Approximator</h1>
+    <p>Find the optimal combination of components to hit your target value</p>
+  </header>
+
+  <div class="card">
+    <div class="form-group">
+      <label>Available Components</label>
+      <input type="text" id="components" placeholder="1k, 2.2kx3, 4.7k, 10kx5" />
+      <div class="input-help">
+        Comma-separated values. Use SI prefixes: <strong>k</strong> (kilo), <strong>M</strong> (mega), <strong>m</strong> (milli), <strong>u</strong> (micro), <strong>n</strong> (nano), <strong>p</strong> (pico).
+        Use <strong>x</strong> to specify quantity, e.g. <strong>4.7kx5</strong> = five 4.7k&ohm; resistors.
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="form-group">
+        <label>Target Value <span class="hint">(SI prefixes ok)</span></label>
+        <input type="text" id="target" placeholder="15k" />
+      </div>
+      <div class="form-group">
+        <label>Tolerance %</label>
+        <input type="number" id="tolerance" value="5" min="0" step="0.1" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Component Type</label>
+      <select id="type">
+        <option value="resistor">Resistor / Inductor</option>
+        <option value="capacitor">Capacitor</option>
+      </select>
+    </div>
+
+    <button id="solve">Solve</button>
+  </div>
+
+  <div class="card result" id="result">
+    <div class="result-header">Result</div>
+    <div id="result-body"></div>
+  </div>
+
+  <footer>
+    Built for EE students in circuit labs.<br>
+    Algorithm by <a href="https://jurasofish.github.io/picking-resistors-for-parallel-and-series-equivalence.html" target="_blank" rel="noopener">Michael Jurasovic</a>, web app by <a href="https://fardinahsan.com/" target="_blank" rel="noopener">Fardin Ahsan</a>.
+  </footer>
+
+  <script>
+  // ========== SI PREFIX PARSING ==========
+  const SI = {
+    'a':1e-18,'f':1e-15,'p':1e-12,'n':1e-9,'u':1e-6,'m':1e-3,
+    'c':1e-2,'d':1e-1,'h':1e2,'k':1e3,'K':1e3,'M':1e6,'G':1e9,'T':1e12,'P':1e15,'E':1e18
+  };
+
+  function parseValue(str) {
+    str = str.trim();
+    if (!str) return null;
+    const m = str.match(/^([0-9]*\.?[0-9]+)\s*([a-zA-Z]?)(?:x(\d+))?$/);
+    if (!m) return null;
+    const num = parseFloat(m[1]);
+    if (isNaN(num) || num <= 0) return null;
+    const mult = m[2] && SI[m[2]] !== undefined ? SI[m[2]] : 1;
+    return { value: num * mult, count: m[3] ? parseInt(m[3]) : 1 };
+  }
+
+  function parseComponentList(input) {
+    const out = [];
+    for (const part of input.split(',')) {
+      const p = parseValue(part);
+      if (p) for (let i = 0; i < p.count; i++) out.push(p.value);
+    }
+    return out;
+  }
+
+  function formatValue(val, unit) {
+    if (val === 0) return '0 ' + unit;
+    const pf = [
+      [1e12,'T'],[1e9,'G'],[1e6,'M'],[1e3,'k'],[1,''],[1e-3,'m'],[1e-6,'\u00B5'],[1e-9,'n'],[1e-12,'p']
+    ];
+    const av = Math.abs(val);
+    for (const [exp, sym] of pf) {
+      if (av >= exp * 0.999) {
+        const n = val / exp;
+        return (Math.abs(n - Math.round(n)) < 0.001 ? Math.round(n) : +n.toPrecision(4)) + ' ' + sym + unit;
+      }
+    }
+    return val.toPrecision(4) + ' ' + unit;
+  }
+
+  // ========== TOPOLOGY DATA STRUCTURE ==========
+  // { type: 'component', value: number }
+  // { type: 'series', children: [...] }
+  // { type: 'parallel', children: [...] }
+
+  function calcEquivalent(topo, isResistor) {
+    if (topo.type === 'component') return topo.value;
+    const vals = topo.children.map(c => calcEquivalent(c, isResistor));
+    const isSum = (topo.type === 'series' && isResistor) || (topo.type === 'parallel' && !isResistor);
+    if (isSum) return vals.reduce((a, b) => a + b, 0);
+    const invSum = vals.reduce((a, v) => a + 1 / v, 0);
+    return invSum === 0 ? Infinity : 1 / invSum;
+  }
+
+  function flatten(topo) {
+    if (topo.type === 'component') return topo;
+    const kids = [];
+    for (const c of topo.children) {
+      const fc = flatten(c);
+      if (fc.type === topo.type) kids.push(...fc.children);
+      else kids.push(fc);
+    }
+    return { type: topo.type, children: kids };
+  }
+
+  function countComponents(topo) {
+    if (topo.type === 'component') return 1;
+    return topo.children.reduce((s, c) => s + countComponents(c), 0);
+  }
+
+  function getComponentValues(topo) {
+    if (topo.type === 'component') return [topo.value];
+    return topo.children.flatMap(c => getComponentValues(c));
+  }
+
+  function describeTopology(topo) {
+    if (topo.type === 'component') return topo.type;
+    const childTypes = new Set(topo.children.map(c => c.type));
+    const allLeaves = topo.children.every(c => c.type === 'component');
+    if (allLeaves) return topo.type === 'series' ? 'Series' : 'Parallel';
+    return 'Mixed';
+  }
+
+  function formulaText(topo, unit) {
+    if (topo.type === 'component') return formatValue(topo.value, unit);
+    const sep = topo.type === 'series' ? ' + ' : ' \u2016 ';
+    const parts = topo.children.map(c => {
+      const s = formulaText(c, unit);
+      return c.type !== 'component' && c.type !== topo.type ? '(' + s + ')' : s;
+    });
+    return parts.join(sep);
+  }
+
+  // ========== TOPOLOGY GENERATION ==========
+  // Generate all 2-partitions of an array, fixing index 0 in group A to avoid duplicates
+  function twoPartitions(arr) {
+    const results = [];
+    const n = arr.length;
+    if (n < 2) return results;
+    for (let mask = 0; mask < (1 << (n - 1)); mask++) {
+      const a = [arr[0]], b = [];
+      for (let i = 1; i < n; i++) {
+        if (mask & (1 << (i - 1))) a.push(arr[i]);
+        else b.push(arr[i]);
+      }
+      if (b.length > 0) results.push([a, b]);
+    }
+    return results;
+  }
+
+  // All binary-tree topologies (exhaustive for small n)
+  function* allTopologies(values) {
+    if (values.length === 1) {
+      yield { type: 'component', value: values[0] };
+      return;
+    }
+    for (const [a, b] of twoPartitions(values)) {
+      for (const lt of allTopologies(a)) {
+        for (const rt of allTopologies(b)) {
+          yield { type: 'series', children: [lt, rt] };
+          yield { type: 'parallel', children: [lt, rt] };
+        }
+      }
+    }
+  }
+
+  // Flat 2-partition mixed topologies (for larger subsets)
+  function makeGroup(values, type) {
+    if (values.length === 1) return { type: 'component', value: values[0] };
+    return { type, children: values.map(v => ({ type: 'component', value: v })) };
+  }
+
+  function* flatMixedTopologies(values) {
+    // Pure
+    yield makeGroup(values, 'series');
+    yield makeGroup(values, 'parallel');
+    // Mixed 2-partition
+    for (const [a, b] of twoPartitions(values)) {
+      for (const outer of ['series', 'parallel']) {
+        for (const aType of ['series', 'parallel']) {
+          for (const bType of ['series', 'parallel']) {
+            if (aType === outer && bType === outer) continue; // same as pure
+            yield { type: outer, children: [makeGroup(a, aType), makeGroup(b, bType)] };
+          }
+        }
+      }
+    }
+  }
+
+  // Hybrid: full recursive for small groups, flat for large
+  function* hybridTopologies(values) {
+    if (values.length <= 4) {
+      yield* allTopologies(values);
+      return;
+    }
+    // Pure
+    yield makeGroup(values, 'series');
+    yield makeGroup(values, 'parallel');
+    // 2-partition with recursive sub-topologies for small groups
+    for (const [a, b] of twoPartitions(values)) {
+      const aTopos = a.length <= 4
+        ? [...allTopologies(a)]
+        : [makeGroup(a, 'series'), makeGroup(a, 'parallel')];
+      const bTopos = b.length <= 4
+        ? [...allTopologies(b)]
+        : [makeGroup(b, 'series'), makeGroup(b, 'parallel')];
+      for (const lt of aTopos) {
+        for (const rt of bTopos) {
+          yield { type: 'series', children: [lt, rt] };
+          yield { type: 'parallel', children: [lt, rt] };
+        }
+      }
+    }
+  }
+
+  // ========== SOLVER ==========
+  const MAX_EVALS = 8_000_000;
+
+  function* uniqueSubsets(sorted, size) {
+    function* helper(start, current) {
+      if (current.length === size) { yield [...current]; return; }
+      for (let i = start; i <= sorted.length - (size - current.length); i++) {
+        if (i > start && sorted[i] === sorted[i - 1]) continue;
+        current.push(sorted[i]);
+        yield* helper(i + 1, current);
+        current.pop();
+      }
+    }
+    yield* helper(0, []);
+  }
+
+  function solve(components, target, tolerancePct, isResistor) {
+    const tol = tolerancePct / 100;
+    const lower = target * (1 - tol);
+    const upper = target * (1 + tol);
+    const sorted = [...components].sort((a, b) => a - b);
+    let best = null;
+    let evals = 0;
+
+    for (let size = 1; size <= Math.min(sorted.length, 7); size++) {
+      for (const subset of uniqueSubsets(sorted, size)) {
+        const gen = size <= 5 ? hybridTopologies(subset) : flatMixedTopologies(subset);
+        for (const topo of gen) {
+          evals++;
+          if (evals > MAX_EVALS) return best;
+          const eq = calcEquivalent(topo, isResistor);
+          if (eq >= lower && eq <= upper) {
+            const error = 100 * (eq - target) / target;
+            if (!best || size < best.count || (size === best.count && Math.abs(error) < Math.abs(best.error))) {
+              best = { topology: flatten(topo), equivalent: eq, error, count: size };
+            }
+          }
+        }
+      }
+      if (best) return best; // found minimum-count solution
+    }
+
+    return best;
+  }
+
+  // ========== SVG CIRCUIT RENDERER ==========
+  const CW = 72, CH = 44, WL = 16, BG = 12, ST = 1.5;
+  const WIRE_COLOR = '#6b7280';
+  const COMP_STROKE = '#6366f1';
+  const COMP_FILL = '#1e1b4b';
+  const TEXT_COLOR = '#e4e4e7';
+  const DOT_COLOR = '#9ca3af';
+
+  let svgUnit = '\u2126';
+  let svgIsResistor = true;
+
+  // ========== RESISTOR COLOR BANDS ==========
+  function valueToColorBands(value) {
+    const DIGIT = ['#000000','#8B4513','#FF0000','#FF8C00','#FFD700','#228B22','#0000FF','#8B00FF','#808080','#FFFFFF'];
+    const MULT = {'-2':'#C0C0C0','-1':'#DAA520','0':'#000000','1':'#8B4513','2':'#FF0000','3':'#FF8C00','4':'#FFD700','5':'#228B22','6':'#0000FF','7':'#8B00FF','8':'#808080','9':'#FFFFFF'};
+    if (value <= 0 || !isFinite(value)) return null;
+    let exp = Math.floor(Math.log10(value));
+    let sig = Math.round(value / Math.pow(10, exp - 1));
+    if (sig >= 100) { sig = Math.round(sig / 10); exp++; }
+    if (sig < 10) { sig *= 10; exp--; }
+    const d1 = Math.floor(sig / 10), d2 = sig % 10, mult = exp - 1;
+    if (d1 < 0 || d1 > 9 || d2 < 0 || d2 > 9) return null;
+    const mc = MULT[mult.toString()];
+    if (!mc) return null;
+    return [DIGIT[d1], DIGIT[d2], mc, '#DAA520'];
+  }
+
+  function layout(topo) {
+    if (topo.type === 'component') {
+      return { w: CW, h: CH, my: CH / 2, topo };
+    }
+
+    const kids = topo.children.map(layout);
+
+    if (topo.type === 'series') {
+      const w = kids.reduce((s, k) => s + k.w, 0) + WL * (kids.length + 1);
+      const maxMy = Math.max(...kids.map(k => k.my));
+      const maxBelow = Math.max(...kids.map(k => k.h - k.my));
+      const h = maxMy + maxBelow;
+      return { w, h, my: maxMy, kids, topo };
+    }
+
+    // parallel
+    const innerW = Math.max(...kids.map(k => k.w));
+    const w = innerW + WL * 4;
+    const h = kids.reduce((s, k) => s + k.h, 0) + BG * (kids.length - 1);
+    return { w, h, my: h / 2, kids, innerW, topo };
+  }
+
+  function wire(x1, y1, x2, y2) {
+    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${WIRE_COLOR}" stroke-width="${ST}" stroke-linecap="round"/>`;
+  }
+
+  function dot(x, y) {
+    return `<circle cx="${x}" cy="${y}" r="2" fill="${DOT_COLOR}"/>`;
+  }
+
+  function renderSvg(lo, x, y) {
+    let s = '';
+
+    if (lo.topo.type === 'component') {
+      const rx = x, rw = lo.w, rh = lo.h;
+      const midY = y + rh / 2;
+      const label = formatValue(lo.topo.value, svgUnit);
+
+      if (svgIsResistor) {
+        // Resistor body with color bands
+        const bodyW = 48, bodyH = 16;
+        const bodyX = rx + (rw - bodyW) / 2;
+        const bodyY = midY - bodyH / 2;
+
+        // Lead wires
+        s += wire(rx, midY, bodyX, midY);
+        s += wire(bodyX + bodyW, midY, rx + rw, midY);
+
+        // Body (gradient fill)
+        s += `<rect x="${bodyX}" y="${bodyY}" width="${bodyW}" height="${bodyH}" rx="4" fill="url(#rBody)" stroke="#8B7355" stroke-width="0.75"/>`;
+
+        // Metallic end caps
+        const capW = 4;
+        s += `<rect x="${bodyX}" y="${bodyY}" width="${capW}" height="${bodyH}" rx="1.5" fill="#A8A8A8" stroke="#888" stroke-width="0.4"/>`;
+        s += `<rect x="${bodyX + bodyW - capW}" y="${bodyY}" width="${capW}" height="${bodyH}" rx="1.5" fill="#A8A8A8" stroke="#888" stroke-width="0.4"/>`;
+
+        // Color bands
+        const bands = valueToColorBands(lo.topo.value);
+        if (bands) {
+          const bw = 3.5, bpad = 1.5;
+          const positions = [0.20, 0.32, 0.44, 0.75];
+          for (let i = 0; i < 4; i++) {
+            const bx = bodyX + bodyW * positions[i] - bw / 2;
+            s += `<rect x="${bx}" y="${bodyY + bpad}" width="${bw}" height="${bodyH - bpad * 2}" rx="0.5" fill="${bands[i]}" stroke="rgba(0,0,0,0.25)" stroke-width="0.5"/>`;
+          }
+        }
+
+        // Value label below
+        s += `<text x="${rx + rw / 2}" y="${bodyY + bodyH + 13}" text-anchor="middle" fill="${TEXT_COLOR}" font-size="9" font-family="-apple-system,system-ui,sans-serif">${label}</text>`;
+      } else {
+        // Capacitor symbol (two parallel plates)
+        const plateH = 18, plateGap = 6, plateW = 2.5;
+        const cx = rx + rw / 2;
+        const plateY = midY - plateH / 2;
+
+        // Lead wires
+        s += wire(rx, midY, cx - plateGap / 2, midY);
+        s += wire(cx + plateGap / 2, midY, rx + rw, midY);
+
+        // Plates
+        s += `<line x1="${cx - plateGap / 2}" y1="${plateY}" x2="${cx - plateGap / 2}" y2="${plateY + plateH}" stroke="${COMP_STROKE}" stroke-width="${plateW}" stroke-linecap="round"/>`;
+        s += `<line x1="${cx + plateGap / 2}" y1="${plateY}" x2="${cx + plateGap / 2}" y2="${plateY + plateH}" stroke="${COMP_STROKE}" stroke-width="${plateW}" stroke-linecap="round"/>`;
+
+        // Value label below
+        s += `<text x="${rx + rw / 2}" y="${midY + plateH / 2 + 13}" text-anchor="middle" fill="${TEXT_COLOR}" font-size="9" font-family="-apple-system,system-ui,sans-serif">${label}</text>`;
+      }
+
+      return s;
+    }
+
+    if (lo.topo.type === 'series') {
+      let cx = x + WL;
+      // Left lead
+      s += wire(x, y + lo.my, cx, y + lo.my);
+      s += dot(x, y + lo.my);
+
+      for (let i = 0; i < lo.kids.length; i++) {
+        const k = lo.kids[i];
+        const ky = y + lo.my - k.my;
+        s += renderSvg(k, cx, ky);
+        cx += k.w;
+        if (i < lo.kids.length - 1) {
+          s += wire(cx, y + lo.my, cx + WL, y + lo.my);
+          cx += WL;
+        }
+      }
+      // Right lead
+      s += wire(cx, y + lo.my, cx + WL, y + lo.my);
+      s += dot(cx + WL, y + lo.my);
+      return s;
+    }
+
+    // parallel
+    const barL = x + WL;
+    const barR = x + lo.w - WL;
+    const branchMids = [];
+    let cy = y;
+
+    for (let i = 0; i < lo.kids.length; i++) {
+      const k = lo.kids[i];
+      const childX = barL + WL;
+      const childMidY = cy + k.my;
+      branchMids.push(childMidY);
+
+      // Center child horizontally
+      const offset = (lo.innerW - k.w) / 2;
+
+      // Wire from left bar to child
+      s += wire(barL, childMidY, childX + offset, childMidY);
+      // Render child
+      s += renderSvg(k, childX + offset, cy);
+      // Wire from child to right bar
+      s += wire(childX + offset + k.w, childMidY, barR, childMidY);
+
+      cy += k.h + BG;
+    }
+
+    // Vertical bars
+    const topY = Math.min(...branchMids, y + lo.my);
+    const botY = Math.max(...branchMids, y + lo.my);
+    s += wire(barL, topY, barL, botY);
+    s += wire(barR, topY, barR, botY);
+
+    // Lead wires
+    s += wire(x, y + lo.my, barL, y + lo.my);
+    s += wire(barR, y + lo.my, x + lo.w, y + lo.my);
+    s += dot(x, y + lo.my);
+    s += dot(x + lo.w, y + lo.my);
+
+    return s;
+  }
+
+  function buildCircuitSvg(topo, unit, isResistor) {
+    svgUnit = unit;
+    svgIsResistor = isResistor;
+    const lo = layout(topo);
+    const pad = 20;
+    const totalW = lo.w + pad * 2;
+    const totalH = lo.h + pad * 2;
+    let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${totalW} ${totalH}" width="${Math.min(totalW, 520)}">`;
+    svg += `<defs><linearGradient id="rBody" x1="0" y1="0" x2="0" y2="1">`;
+    svg += `<stop offset="0%" stop-color="#D9C9A8"/><stop offset="40%" stop-color="#C4A882"/><stop offset="100%" stop-color="#A8906A"/>`;
+    svg += `</linearGradient></defs>`;
+    svg += renderSvg(lo, pad, pad);
+    svg += '</svg>';
+    return svg;
+  }
+
+  // ========== UI ==========
+  const solveBtn = document.getElementById('solve');
+
+  solveBtn.addEventListener('click', () => {
+    const componentsInput = document.getElementById('components').value;
+    const targetInput = document.getElementById('target').value;
+    const toleranceInput = parseFloat(document.getElementById('tolerance').value);
+    const isResistor = document.getElementById('type').value === 'resistor';
+
+    const resultCard = document.getElementById('result');
+    const resultBody = document.getElementById('result-body');
+
+    const components = parseComponentList(componentsInput);
+    const targetParsed = parseValue(targetInput);
+
+    if (components.length === 0) {
+      resultCard.classList.add('visible');
+      resultBody.innerHTML = '<span class="error-msg">Enter at least one valid component value.</span>';
+      return;
+    }
+    if (!targetParsed) {
+      resultCard.classList.add('visible');
+      resultBody.innerHTML = '<span class="error-msg">Enter a valid target value.</span>';
+      return;
+    }
+    if (isNaN(toleranceInput) || toleranceInput < 0) {
+      resultCard.classList.add('visible');
+      resultBody.innerHTML = '<span class="error-msg">Enter a valid tolerance percentage.</span>';
+      return;
+    }
+
+    const target = targetParsed.value;
+    const unit = isResistor ? '\u2126' : 'F';
+
+    solveBtn.textContent = 'Solving\u2026';
+    solveBtn.disabled = true;
+
+    // Use setTimeout so the UI updates before the computation blocks
+    setTimeout(() => {
+      const result = solve(components, target, toleranceInput, isResistor);
+      solveBtn.textContent = 'Solve';
+      solveBtn.disabled = false;
+      resultCard.classList.add('visible');
+
+      if (!result) {
+        resultBody.innerHTML = '<span class="error-msg">No solution found within the given tolerance. Try increasing tolerance or adding more components.</span>';
+        return;
+      }
+
+      const topo = result.topology;
+      const errorSign = result.error >= 0 ? '+' : '';
+      const errorClass = Math.abs(result.error) < 1 ? 'success-value' : '';
+      const topoType = describeTopology(topo);
+
+      const vals = getComponentValues(topo);
+      const chips = vals.map(v => `<span class="chip">${formatValue(v, unit)}</span>`).join('');
+      const formula = formulaText(topo, unit);
+      const circuitSvg = buildCircuitSvg(topo, unit, isResistor);
+
+      resultBody.innerHTML = `
+        <div class="result-value ${errorClass}">${formatValue(result.equivalent, unit)}
+          <span class="topo-tag">${topoType}</span>
+        </div>
+        <div class="result-detail">
+          Target: ${formatValue(target, unit)} &middot;
+          Error: <strong>${errorSign}${result.error.toFixed(2)}%</strong> &middot;
+          ${result.count} component${result.count > 1 ? 's' : ''}
+        </div>
+        <div class="result-formula">${formula}</div>
+        <div class="circuit-svg">${circuitSvg}</div>
+        <div class="result-components">${chips}</div>
+      `;
+    }, 20);
+  });
+
+  document.querySelectorAll('input').forEach(input => {
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') solveBtn.click();
+    });
+  });
+
+  // Pre-fill an example and solve on page load so visitors see the result immediately
+  document.getElementById('components').value = '1k, 2.2kx3, 4.7k, 10kx5, 470, 680';
+  document.getElementById('target').value = '8.2k';
+  document.getElementById('tolerance').value = '5';
+  setTimeout(() => solveBtn.click(), 100);
+  </script>
+</body>
+</html>
