@@ -1,6 +1,2 @@
 .venv
-.venv/*
 .vscode
-.vscode/*
-nodej/node_modules
-nodej/node_modules/*
