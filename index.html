@@ -160,7 +160,8 @@
       margin-bottom: 0.25rem;
     }
 
-    input {
+    input[type="text"],
+    input[type="number"] {
       width: 100%;
       padding: 0.45rem 0.6rem;
       background: var(--bg-deep);
@@ -173,13 +174,14 @@
       box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
     }
 
-    input:focus {
+    input[type="text"]:focus,
+    input[type="number"]:focus {
       outline: none;
       border-color: var(--accent);
       box-shadow: inset 0 1px 3px rgba(0,0,0,0.3), 0 0 0 1px var(--accent-dim);
     }
 
-    input::placeholder { color: #4a4538; }
+    input[type="text"]::placeholder { color: #4a4538; }
 
     .radio-group {
       display: flex;
@@ -187,6 +189,7 @@
     }
 
     .radio-option {
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1023,30 +1026,17 @@
   // E12 series: 12 values per decade (10% tolerance standard)
   const E12_BASE = [1.0, 1.2, 1.5, 1.8, 2.2, 2.7, 3.3, 3.9, 4.7, 5.6, 6.8, 8.2];
 
-  function getStandardValues(target, compType) {
+  function getStandardValues(target) {
+    // Generate E12 values across all decades from 1e-12 to 1e7
+    // The component type only affects the math (series/parallel formulas),
+    // not which values are available as standard parts.
     const values = [];
-    if (compType === 'capacitor') {
-      // Standard capacitor decades: 1pF to 1000µF
-      const decades = [1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3];
-      for (const dec of decades) {
-        for (const base of E12_BASE) values.push(base * dec);
-      }
-    } else if (compType === 'inductor') {
-      // Standard inductor decades: 1µH to 100mH
-      const decades = [1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1];
-      for (const dec of decades) {
-        for (const base of E12_BASE) values.push(base * dec);
-      }
-    } else {
-      // Standard resistor decades: 1Ω to 10MΩ
-      const decades = [1, 10, 100, 1e3, 1e4, 1e5, 1e6, 1e7];
-      for (const dec of decades) {
-        for (const base of E12_BASE) values.push(base * dec);
-      }
+    for (let exp = -12; exp <= 7; exp++) {
+      const decade = Math.pow(10, exp);
+      for (const base of E12_BASE) values.push(base * decade);
     }
 
     // Filter to values within ~3 decades of target for performance
-    // (solver is combinatorial, so fewer values = faster)
     if (target > 0) {
       const lo = target / 1000, hi = target * 1000;
       const filtered = values.filter(v => v >= lo && v <= hi);
@@ -1086,7 +1076,7 @@
 
     const userComponents = parseComponentList(componentsInput);
     const usingStandard = userComponents.length === 0;
-    const components = usingStandard ? getStandardValues(target, compType) : userComponents;
+    const components = usingStandard ? getStandardValues(target) : userComponents;
 
     solveBtn.textContent = '\u25B6 Solving\u2026';
     solveBtn.disabled = true;
