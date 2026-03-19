@@ -546,7 +546,7 @@
           </div>
         </div>
 
-        <button id="solve">&#9654; Run Simulation</button>
+        <button id="solve" style="display:none">&#9654; Run Simulation</button>
       </div>
     </div>
 
@@ -579,7 +579,7 @@
 
         <h2>Supported components</h2>
         <ul>
-          <li><strong>Resistors</strong>: series: <code>R = R1 + R2</code>, parallel: <code>1/R = 1/R1 + 1/R2</code>. Displayed with realistic color band graphics.</li>
+          <li><strong>Resistors</strong>: series: <code>R = R1 + R2</code>, parallel: <code>1/R = 1/R1 + 1/R2</code>. Displayed with color bands per the IEC 60062 (EIA) standard.</li>
           <li><strong>Inductors</strong>: same formulas as resistors. Displayed with coil symbols. Unit: Henry (H).</li>
           <li><strong>Capacitors</strong>: formulas are swapped: parallel adds, series uses the reciprocal sum. Displayed with plate symbols. Unit: Farad (F).</li>
         </ul>
@@ -1126,6 +1126,7 @@
   });
 
   document.querySelectorAll('input:not([name="type"])').forEach(input => {
+    input.addEventListener('input', () => solveBtn.click());
     input.addEventListener('keydown', e => {
       if (e.key === 'Enter') solveBtn.click();
     });
