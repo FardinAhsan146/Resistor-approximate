@@ -8,254 +8,562 @@
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      --bg: #0f1117;
-      --surface: #1a1d27;
-      --border: #2a2d3a;
-      --text: #e4e4e7;
-      --text-muted: #9ca3af;
-      --accent: #6366f1;
-      --accent-hover: #818cf8;
-      --success: #22c55e;
-      --error: #ef4444;
-      --radius: 10px;
+      --bg: #1c1a17;
+      --bg-deep: #141210;
+      --surface: #262320;
+      --surface-raised: #302c28;
+      --border: #3d3732;
+      --border-light: #504840;
+      --text: #e8e0d4;
+      --text-muted: #9c9080;
+      --accent: #d4a03c;
+      --accent-hover: #e0b050;
+      --accent-dim: #a07828;
+      --green: #4caf50;
+      --green-dark: #357a38;
+      --green-glow: #5cbf60;
+      --red: #c0392b;
+      --red-dim: #8b2e22;
+      --blue-trace: #5090c0;
+      --radius: 4px;
+      --font-mono: 'SF Mono', 'Fira Code', 'Consolas', 'Courier New', monospace;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 2rem 1rem;
+      padding: 0;
+      position: relative;
     }
 
-    header { text-align: center; margin-bottom: 2rem; }
-    header h1 { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.025em; margin-bottom: 0.25rem; }
-    header p { color: var(--text-muted); font-size: 0.9rem; }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      opacity: 0.045;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='120'%3E%3Cdefs%3E%3Cstyle%3Eline,path%7Bstroke:%23c0a060;fill:none;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round%7D%3C/style%3E%3C/defs%3E%3Cline x1='0' y1='30' x2='20' y2='30'/%3E%3Cpath d='M20 30l4-10 8 20 8-20 8 20 8-20 8 20 4-10'/%3E%3Cline x1='68' y1='30' x2='100' y2='30'/%3E%3Cpath d='M100 30l4-10 8 20 8-20 8 20 8-20 8 20 4-10'/%3E%3Cline x1='148' y1='30' x2='200' y2='30'/%3E%3Cline x1='0' y1='90' x2='30' y2='90'/%3E%3Cpath d='M30 90l4-10 8 20 8-20 8 20 8-20 8 20 4-10'/%3E%3Cline x1='78' y1='90' x2='120' y2='90'/%3E%3Cpath d='M120 90l4-10 8 20 8-20 8 20 4-10'/%3E%3Cline x1='158' y1='90' x2='200' y2='90'/%3E%3Cline x1='100' y1='0' x2='100' y2='30'/%3E%3Cline x1='100' y1='30' x2='100' y2='90'/%3E%3Cline x1='30' y1='90' x2='30' y2='120'/%3E%3Cline x1='158' y1='90' x2='158' y2='120'/%3E%3Cline x1='0' y1='60' x2='0' y2='90'/%3E%3Cline x1='200' y1='0' x2='200' y2='30'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 200px 120px;
+    }
 
+    header, .card, footer, .toolbar { position: relative; z-index: 1; }
+
+    /* ===== Toolbar (PSpice-style top bar) ===== */
+    .toolbar {
+      width: 100%;
+      background: linear-gradient(180deg, #302c28 0%, #262320 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 0.5rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+
+    .toolbar-logo {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .toolbar-logo span {
+      color: var(--text-muted);
+      font-weight: 400;
+      font-size: 0.75rem;
+      margin-left: 0.3rem;
+    }
+
+    .toolbar-sep {
+      width: 1px;
+      height: 1.2rem;
+      background: var(--border);
+    }
+
+    .toolbar-hint {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* ===== Main content ===== */
+    .main {
+      width: 100%;
+      max-width: 580px;
+      padding: 1.25rem 1rem 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    header {
+      text-align: left;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    header h1 {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 0.15rem;
+    }
+
+    header p { color: var(--text-muted); font-size: 0.78rem; }
+
+    /* ===== Cards (parameter panels) ===== */
     .card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1.5rem;
+      padding: 0;
       width: 100%;
-      max-width: 560px;
-      margin-bottom: 1rem;
+      margin-bottom: 0.75rem;
+      overflow: hidden;
     }
 
-    .form-group { margin-bottom: 1rem; }
+    .card-title {
+      background: var(--surface-raised);
+      border-bottom: 1px solid var(--border);
+      padding: 0.4rem 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .card-body { padding: 0.75rem; }
+
+    .form-group { margin-bottom: 0.75rem; }
     .form-group:last-of-type { margin-bottom: 0; }
 
     label {
       display: block;
-      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--text-muted);
-      margin-bottom: 0.35rem;
-    }
-
-    label .hint {
-      font-weight: 400;
-      text-transform: none;
-      letter-spacing: normal;
-      font-size: 0.75rem;
-      opacity: 0.7;
+      margin-bottom: 0.25rem;
     }
 
     input, select {
       width: 100%;
-      padding: 0.6rem 0.75rem;
-      background: var(--bg);
+      padding: 0.45rem 0.6rem;
+      background: var(--bg-deep);
       border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--text);
-      font-size: 0.95rem;
-      font-family: inherit;
+      border-radius: 2px;
+      color: var(--green-glow);
+      font-size: 0.9rem;
+      font-family: var(--font-mono);
       transition: border-color 0.15s;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
     }
 
-    input:focus, select:focus { outline: none; border-color: var(--accent); }
-    input::placeholder { color: #555; }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.3), 0 0 0 1px var(--accent-dim);
+    }
+
+    input::placeholder { color: #4a4538; }
+
+    select {
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    select option {
+      background: var(--bg-deep);
+      color: var(--text);
+    }
 
     .input-help {
-      font-size: 0.75rem;
+      font-size: 0.68rem;
       color: var(--text-muted);
       line-height: 1.5;
-      margin-top: 0.3rem;
+      margin-top: 0.25rem;
       opacity: 0.7;
     }
 
     .input-help strong {
-      color: var(--text);
+      color: var(--accent);
       opacity: 1;
     }
 
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
 
+    /* ===== Run button (PSpice green simulate button) ===== */
     button#solve {
       width: 100%;
-      padding: 0.7rem;
-      margin-top: 1.25rem;
-      background: var(--accent);
+      padding: 0.55rem;
+      margin-top: 0.75rem;
+      background: linear-gradient(180deg, var(--green) 0%, var(--green-dark) 100%);
       color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 1rem;
-      font-weight: 600;
+      border: 1px solid var(--green-dark);
+      border-radius: 3px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: all 0.15s;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+      text-shadow: 0 1px 1px rgba(0,0,0,0.3);
     }
 
-    button#solve:hover { background: var(--accent-hover); }
-    button#solve:disabled { opacity: 0.6; cursor: not-allowed; }
+    button#solve:hover {
+      background: linear-gradient(180deg, var(--green-glow) 0%, var(--green) 100%);
+      box-shadow: 0 1px 4px rgba(76,175,80,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+    }
 
+    button#solve:active {
+      background: linear-gradient(180deg, var(--green-dark) 0%, var(--green) 100%);
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+    }
+
+    button#solve:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ===== Result panel ===== */
     .result { display: none; }
     .result.visible { display: block; }
 
     .result-header {
-      font-size: 0.8rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--text-muted);
-      margin-bottom: 0.75rem;
+      display: none; /* replaced by card-title */
     }
 
-    .result-value { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; }
+    .result-value {
+      font-family: var(--font-mono);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--green-glow);
+      margin-bottom: 0.25rem;
+    }
 
     .result-detail {
       color: var(--text-muted);
-      font-size: 0.85rem;
+      font-size: 0.78rem;
+      font-family: var(--font-mono);
       margin-bottom: 0.5rem;
-      line-height: 1.6;
+      line-height: 1.7;
     }
 
     .result-formula {
-      font-family: 'SF Mono', 'Fira Code', 'Courier New', monospace;
-      font-size: 0.85rem;
-      color: var(--text);
-      background: var(--bg);
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--accent);
+      background: var(--bg-deep);
       border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 0.6rem 0.8rem;
+      border-radius: 2px;
+      padding: 0.5rem 0.7rem;
       margin-top: 0.5rem;
       overflow-x: auto;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
     }
 
     .result-components {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.4rem;
-      margin-top: 0.75rem;
+      gap: 0.35rem;
+      margin-top: 0.6rem;
     }
 
     .chip {
-      background: var(--bg);
+      background: var(--surface-raised);
       border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 0.3rem 0.7rem;
-      font-size: 0.8rem;
+      border-radius: 2px;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.72rem;
       font-weight: 500;
+      font-family: var(--font-mono);
+      color: var(--text);
       white-space: nowrap;
     }
 
-    .error-msg { color: var(--error); font-size: 0.9rem; }
-    .success-value { color: var(--success); }
+    .error-msg { color: var(--red); font-size: 0.85rem; font-family: var(--font-mono); }
+    .success-value { color: var(--green-glow); }
 
     .circuit-svg {
-      margin-top: 0.75rem;
-      background: var(--bg);
+      margin-top: 0.6rem;
+      background: var(--bg-deep);
       border: 1px solid var(--border);
-      border-radius: 6px;
+      border-radius: 2px;
       padding: 0.75rem;
       overflow-x: auto;
       display: flex;
       justify-content: center;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
     }
 
     .circuit-svg svg { display: block; max-width: 100%; height: auto; }
 
     .topo-tag {
       display: inline-block;
-      background: var(--accent);
-      color: white;
-      font-size: 0.7rem;
-      font-weight: 600;
+      background: var(--accent-dim);
+      color: var(--text);
+      font-size: 0.6rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
       text-transform: uppercase;
-      letter-spacing: 0.04em;
-      padding: 0.15rem 0.5rem;
-      border-radius: 999px;
+      letter-spacing: 0.06em;
+      padding: 0.1rem 0.45rem;
+      border-radius: 2px;
       margin-left: 0.4rem;
       vertical-align: middle;
+      border: 1px solid var(--accent);
     }
 
+    /* ===== Status bar (bottom) ===== */
     footer {
-      margin-top: 2rem;
+      width: 100%;
+      background: var(--surface-raised);
+      border-top: 1px solid var(--border);
+      padding: 0.35rem 1rem;
       color: var(--text-muted);
-      font-size: 0.75rem;
+      font-size: 0.65rem;
+      font-family: var(--font-mono);
       text-align: center;
       line-height: 1.6;
+      margin-top: auto;
     }
 
     footer a { color: var(--accent); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
+    footer a:hover { text-decoration: underline; color: var(--accent-hover); }
+
+    /* ===== About modal ===== */
+    .toolbar-about {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      background: var(--bg-deep);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 0.2rem 0.6rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .toolbar-about:hover {
+      color: var(--accent);
+      border-color: var(--accent-dim);
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(2px);
+      justify-content: center;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    .modal-overlay.visible { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 560px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .modal-title {
+      background: var(--surface-raised);
+      border-bottom: 1px solid var(--border);
+      padding: 0.5rem 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      position: sticky;
+      top: 0;
+    }
+
+    .modal-close {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.1rem 0.5rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .modal-close:hover { color: var(--red); border-color: var(--red-dim); }
+
+    .modal-body {
+      padding: 1rem;
+      font-size: 0.82rem;
+      line-height: 1.7;
+      color: var(--text);
+    }
+
+    .modal-body h2 {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin: 1.2rem 0 0.5rem;
+    }
+
+    .modal-body h2:first-child { margin-top: 0; }
+
+    .modal-body p { margin-bottom: 0.5rem; }
+    .modal-body p:last-child { margin-bottom: 0; }
+
+    .modal-body code {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      background: var(--bg-deep);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 0.1rem 0.35rem;
+      color: var(--green-glow);
+    }
+
+    .modal-body ul {
+      margin: 0.5rem 0 0.5rem 1.2rem;
+    }
+
+    .modal-body li { margin-bottom: 0.3rem; }
+    .modal-body li:last-child { margin-bottom: 0; }
+
+    .modal-body a { color: var(--accent); text-decoration: none; }
+    .modal-body a:hover { text-decoration: underline; }
 
     @media (max-width: 500px) {
       .row { grid-template-columns: 1fr; }
-      body { padding: 1rem 0.75rem; }
+      .main { padding: 0.75rem 0.75rem 1.5rem; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Resistor Approximator</h1>
-    <p>Find the optimal combination of components to hit your target value</p>
-  </header>
-
-  <div class="card">
-    <div class="form-group">
-      <label>Available Components</label>
-      <input type="text" id="components" placeholder="1k, 2.2kx3, 4.7k, 10kx5" />
-      <div class="input-help">
-        Comma-separated values. Use SI prefixes: <strong>k</strong> (kilo), <strong>M</strong> (mega), <strong>m</strong> (milli), <strong>u</strong> (micro), <strong>n</strong> (nano), <strong>p</strong> (pico).
-        Use <strong>x</strong> to specify quantity, e.g. <strong>4.7kx5</strong> = five 4.7k&ohm; resistors.
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="form-group">
-        <label>Target Value <span class="hint">(SI prefixes ok)</span></label>
-        <input type="text" id="target" placeholder="15k" />
-      </div>
-      <div class="form-group">
-        <label>Tolerance %</label>
-        <input type="number" id="tolerance" value="5" min="0" step="0.1" />
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label>Component Type</label>
-      <select id="type">
-        <option value="resistor">Resistor / Inductor</option>
-        <option value="capacitor">Capacitor</option>
-      </select>
-    </div>
-
-    <button id="solve">Solve</button>
+  <div class="toolbar">
+    <div class="toolbar-logo">ResistorCalc <span>v2.0</span></div>
+    <div class="toolbar-sep"></div>
+    <div class="toolbar-hint">resistor-calc.online</div>
+    <button class="toolbar-about" id="about-btn">? About</button>
   </div>
 
-  <div class="card result" id="result">
-    <div class="result-header">Result</div>
-    <div id="result-body"></div>
+  <div class="main">
+    <header>
+      <h1>// Component Solver</h1>
+      <p>Find the optimal combination to hit your target value</p>
+    </header>
+
+    <div class="card">
+      <div class="card-title">Parameters</div>
+      <div class="card-body">
+        <div class="form-group">
+          <label>Available Components</label>
+          <input type="text" id="components" placeholder="1k, 2.2kx3, 4.7k, 10kx5" />
+          <div class="input-help">
+            Comma-separated. SI prefixes: <strong>k</strong> (kilo), <strong>M</strong> (mega), <strong>m</strong> (milli), <strong>u</strong> (micro), <strong>n</strong> (nano), <strong>p</strong> (pico).
+            Quantity: <strong>4.7kx5</strong> = five 4.7k&#8486;.
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="form-group">
+            <label>Target Value</label>
+            <input type="text" id="target" placeholder="15k" />
+          </div>
+          <div class="form-group">
+            <label>Tolerance %</label>
+            <input type="number" id="tolerance" value="5" min="0" step="0.1" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Component Type</label>
+          <select id="type">
+            <option value="resistor">Resistor</option>
+            <option value="inductor">Inductor</option>
+            <option value="capacitor">Capacitor</option>
+          </select>
+        </div>
+
+        <button id="solve">&#9654; Run Simulation</button>
+      </div>
+    </div>
+
+    <div class="card result" id="result">
+      <div class="card-title">Simulation Output</div>
+      <div class="card-body" id="result-body"></div>
+    </div>
+  </div>
+
+  <!-- About Modal -->
+  <div class="modal-overlay" id="about-modal">
+    <div class="modal">
+      <div class="modal-title">
+        About ResistorCalc
+        <button class="modal-close" id="about-close">&times; Close</button>
+      </div>
+      <div class="modal-body">
+        <h2>What is this?</h2>
+        <p>ResistorCalc helps electrical engineering students find the best combination of components from their available stock to match a target value. Instead of trial and error in the lab, just enter what you have and what you need.</p>
+
+        <h2>How it works</h2>
+        <p>The solver uses <strong>iterative deepening search</strong> with combinatorial topology enumeration. In plain English:</p>
+        <ul>
+          <li>It starts by checking if any single component hits the target within tolerance.</li>
+          <li>If not, it tries all pairs, then all triplets, and so on, always checking <strong>fewest components first</strong>.</li>
+          <li>For each candidate subset, it evaluates every possible circuit topology: pure series, pure parallel, and mixed series-parallel configurations.</li>
+          <li>For small subsets (up to 4 components), it exhaustively searches all binary-tree topologies. For larger subsets, it uses a hybrid approach with 2-partition mixed topologies.</li>
+          <li>The first valid solution found is guaranteed to use the minimum number of components. Among solutions of equal size, the one with the lowest error is chosen.</li>
+        </ul>
+
+        <h2>Supported components</h2>
+        <ul>
+          <li><strong>Resistors</strong>: series: <code>R = R1 + R2</code>, parallel: <code>1/R = 1/R1 + 1/R2</code>. Displayed with realistic color band graphics.</li>
+          <li><strong>Inductors</strong>: same formulas as resistors. Displayed with coil symbols. Unit: Henry (H).</li>
+          <li><strong>Capacitors</strong>: formulas are swapped: parallel adds, series uses the reciprocal sum. Displayed with plate symbols. Unit: Farad (F).</li>
+        </ul>
+
+        <h2>Input format</h2>
+        <p>Component values support SI prefixes: <code>k</code> (kilo), <code>M</code> (mega), <code>m</code> (milli), <code>u</code> (micro), <code>n</code> (nano), <code>p</code> (pico). Use <code>x</code> for quantity: <code>4.7kx5</code> means five 4.7k&#8486; resistors.</p>
+
+        <h2>Algorithm credit</h2>
+        <p>The original optimization concept using Mixed Integer Programming was developed by <a href="https://jurasofish.github.io/picking-resistors-for-parallel-and-series-equivalence.html" target="_blank" rel="noopener">Michael Jurasovic</a>. This web version ports and extends the idea to JavaScript with a topology-aware combinatorial search, running entirely client-side &mdash; no server, no data sent anywhere.</p>
+
+        <h2>Built by</h2>
+        <p><a href="https://fardinahsan.com/" target="_blank" rel="noopener">Fardin Ahsan</a> &mdash; originally as a university project to help EE students in circuit labs.</p>
+      </div>
+    </div>
   </div>
 
   <footer>
-    Built for EE students in circuit labs.<br>
-    Algorithm by <a href="https://jurasofish.github.io/picking-resistors-for-parallel-and-series-equivalence.html" target="_blank" rel="noopener">Michael Jurasovic</a>, web app by <a href="https://fardinahsan.com/" target="_blank" rel="noopener">Fardin Ahsan</a>.
+    Algorithm by <a href="https://jurasofish.github.io/picking-resistors-for-parallel-and-series-equivalence.html" target="_blank" rel="noopener">Michael Jurasovic</a> &middot; Web app by <a href="https://fardinahsan.com/" target="_blank" rel="noopener">Fardin Ahsan</a>
   </footer>
 
   <script>
@@ -490,6 +798,7 @@
 
   let svgUnit = '\u2126';
   let svgIsResistor = true;
+  let svgCompType = 'resistor';
 
   // ========== RESISTOR COLOR BANDS ==========
   function valueToColorBands(value) {
@@ -545,7 +854,7 @@
       const midY = y + rh / 2;
       const label = formatValue(lo.topo.value, svgUnit);
 
-      if (svgIsResistor) {
+      if (svgCompType === 'resistor') {
         // Resistor body with color bands
         const bodyW = 48, bodyH = 16;
         const bodyX = rx + (rw - bodyW) / 2;
@@ -576,6 +885,36 @@
 
         // Value label below
         s += `<text x="${rx + rw / 2}" y="${bodyY + bodyH + 13}" text-anchor="middle" fill="${TEXT_COLOR}" font-size="9" font-family="-apple-system,system-ui,sans-serif">${label}</text>`;
+
+      } else if (svgCompType === 'inductor') {
+        // Inductor symbol (coil humps)
+        const coilW = 40, humps = 4;
+        const coilX = rx + (rw - coilW) / 2;
+        const amp = 7;
+        const humpW = coilW / humps;
+
+        // Lead wires
+        s += wire(rx, midY, coilX, midY);
+        s += wire(coilX + coilW, midY, rx + rw, midY);
+
+        // Draw coil arcs
+        let path = `M ${coilX} ${midY}`;
+        for (let i = 0; i < humps; i++) {
+          const sx = coilX + humpW * i;
+          const ex = sx + humpW;
+          path += ` A ${humpW / 2} ${amp} 0 0 1 ${ex} ${midY}`;
+        }
+        s += `<path d="${path}" fill="none" stroke="${COMP_STROKE}" stroke-width="${ST + 0.5}" stroke-linecap="round"/>`;
+
+        // Core lines (two parallel lines below coil for iron core look)
+        const coreY1 = midY + 1;
+        const coreY2 = midY + 3.5;
+        s += `<line x1="${coilX + 2}" y1="${coreY1}" x2="${coilX + coilW - 2}" y2="${coreY1}" stroke="${COMP_STROKE}" stroke-width="0.7" opacity="0.5"/>`;
+        s += `<line x1="${coilX + 2}" y1="${coreY2}" x2="${coilX + coilW - 2}" y2="${coreY2}" stroke="${COMP_STROKE}" stroke-width="0.7" opacity="0.5"/>`;
+
+        // Value label below
+        s += `<text x="${rx + rw / 2}" y="${midY + amp + 15}" text-anchor="middle" fill="${TEXT_COLOR}" font-size="9" font-family="-apple-system,system-ui,sans-serif">${label}</text>`;
+
       } else {
         // Capacitor symbol (two parallel plates)
         const plateH = 18, plateGap = 6, plateW = 2.5;
@@ -659,9 +998,10 @@
     return s;
   }
 
-  function buildCircuitSvg(topo, unit, isResistor) {
+  function buildCircuitSvg(topo, unit, isResistor, compType) {
     svgUnit = unit;
     svgIsResistor = isResistor;
+    svgCompType = compType || (isResistor ? 'resistor' : 'capacitor');
     const lo = layout(topo);
     const pad = 20;
     const totalW = lo.w + pad * 2;
@@ -682,7 +1022,8 @@
     const componentsInput = document.getElementById('components').value;
     const targetInput = document.getElementById('target').value;
     const toleranceInput = parseFloat(document.getElementById('tolerance').value);
-    const isResistor = document.getElementById('type').value === 'resistor';
+    const compType = document.getElementById('type').value;
+    const isResistor = compType !== 'capacitor'; // resistors & inductors share math
 
     const resultCard = document.getElementById('result');
     const resultBody = document.getElementById('result-body');
@@ -707,15 +1048,15 @@
     }
 
     const target = targetParsed.value;
-    const unit = isResistor ? '\u2126' : 'F';
+    const unit = compType === 'capacitor' ? 'F' : compType === 'inductor' ? 'H' : '\u2126';
 
-    solveBtn.textContent = 'Solving\u2026';
+    solveBtn.textContent = '\u25B6 Solving\u2026';
     solveBtn.disabled = true;
 
     // Use setTimeout so the UI updates before the computation blocks
     setTimeout(() => {
       const result = solve(components, target, toleranceInput, isResistor);
-      solveBtn.textContent = 'Solve';
+      solveBtn.textContent = '\u25B6 Run Simulation';
       solveBtn.disabled = false;
       resultCard.classList.add('visible');
 
@@ -732,7 +1073,7 @@
       const vals = getComponentValues(topo);
       const chips = vals.map(v => `<span class="chip">${formatValue(v, unit)}</span>`).join('');
       const formula = formulaText(topo, unit);
-      const circuitSvg = buildCircuitSvg(topo, unit, isResistor);
+      const circuitSvg = buildCircuitSvg(topo, unit, isResistor, compType);
 
       resultBody.innerHTML = `
         <div class="result-value ${errorClass}">${formatValue(result.equivalent, unit)}
@@ -757,10 +1098,17 @@
   });
 
   // Pre-fill an example and solve on page load so visitors see the result immediately
-  document.getElementById('components').value = '1k, 2.2kx3, 4.7k, 10kx5, 470, 680';
-  document.getElementById('target').value = '8.2k';
-  document.getElementById('tolerance').value = '5';
+  document.getElementById('components').value = '1k, 2.2kx3, 4.7kx2, 10kx5, 470, 680';
+  document.getElementById('target').value = '9.75k';
+  document.getElementById('tolerance').value = '2';
   setTimeout(() => solveBtn.click(), 100);
+
+  // About modal
+  const aboutModal = document.getElementById('about-modal');
+  document.getElementById('about-btn').addEventListener('click', () => aboutModal.classList.add('visible'));
+  document.getElementById('about-close').addEventListener('click', () => aboutModal.classList.remove('visible'));
+  aboutModal.addEventListener('click', (e) => { if (e.target === aboutModal) aboutModal.classList.remove('visible'); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') aboutModal.classList.remove('visible'); });
   </script>
 </body>
 </html>
