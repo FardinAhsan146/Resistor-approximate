@@ -240,45 +240,11 @@
 
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
 
-    /* ===== Run button (PSpice green simulate button) ===== */
-    button#solve {
-      width: 100%;
-      padding: 0.55rem;
-      margin-top: 0.75rem;
-      background: linear-gradient(180deg, var(--green) 0%, var(--green-dark) 100%);
-      color: white;
-      border: 1px solid var(--green-dark);
-      border-radius: 3px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      font-family: var(--font-mono);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      cursor: pointer;
-      transition: all 0.15s;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
-      text-shadow: 0 1px 1px rgba(0,0,0,0.3);
-    }
-
-    button#solve:hover {
-      background: linear-gradient(180deg, var(--green-glow) 0%, var(--green) 100%);
-      box-shadow: 0 1px 4px rgba(76,175,80,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
-    }
-
-    button#solve:active {
-      background: linear-gradient(180deg, var(--green-dark) 0%, var(--green) 100%);
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
-    }
-
-    button#solve:disabled { opacity: 0.5; cursor: not-allowed; }
+    button#solve { display: none; }
 
     /* ===== Result panel ===== */
     .result { display: none; }
     .result.visible { display: block; }
-
-    .result-header {
-      display: none; /* replaced by card-title */
-    }
 
     .result-value {
       font-family: var(--font-mono);
@@ -546,7 +512,7 @@
           </div>
         </div>
 
-        <button id="solve" style="display:none">&#9654; Run Simulation</button>
+        <button id="solve">&#9654; Run Simulation</button>
       </div>
     </div>
 
@@ -592,12 +558,15 @@
 
         <h2>Built by</h2>
         <p><a href="https://fardinahsan.com/" target="_blank" rel="noopener">Fardin Ahsan</a> &mdash; originally as a university project to help EE students in circuit labs.</p>
+
+        <h2>Open Source</h2>
+        <p>This project is open source under the MIT license. View the source code, report issues, or contribute on <a href="https://github.com/FardinAhsan146/Resistor-approximate" target="_blank" rel="noopener">GitHub</a>.</p>
       </div>
     </div>
   </div>
 
   <footer>
-    Algorithm by <a href="https://jurasofish.github.io/picking-resistors-for-parallel-and-series-equivalence.html" target="_blank" rel="noopener">Michael Jurasovic</a> &middot; Web app by <a href="https://fardinahsan.com/" target="_blank" rel="noopener">Fardin Ahsan</a>
+    Algorithm by <a href="https://jurasofish.github.io/picking-resistors-for-parallel-and-series-equivalence.html" target="_blank" rel="noopener">Michael Jurasovic</a> &middot; Web app by <a href="https://fardinahsan.com/" target="_blank" rel="noopener">Fardin Ahsan</a> &middot; <a href="https://github.com/FardinAhsan146/Resistor-approximate" target="_blank" rel="noopener">Open Source</a>
   </footer>
 
   <script>
