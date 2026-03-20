@@ -541,7 +541,8 @@
           <li>If not, it tries all pairs, then all triplets, and so on, always checking <strong>fewest components first</strong>.</li>
           <li>For each candidate subset, it evaluates every possible circuit topology: pure series, pure parallel, and mixed series-parallel configurations.</li>
           <li>For small subsets (up to 4 components), it exhaustively searches all binary-tree topologies. For larger subsets, it uses a hybrid approach with 2-partition mixed topologies.</li>
-          <li>The first valid solution found is guaranteed to use the minimum number of components. Among solutions of equal size, the one with the lowest error is chosen.</li>
+          <li>For solutions needing 1&ndash;7 components, the search is exhaustive and guaranteed optimal (minimum components, lowest error).</li>
+          <li>For 8&ndash;30 components, a <strong>greedy heuristic</strong> takes over: it iteratively adds the component (in series, parallel, or mixed) that brings the result closest to the target. This finds good solutions quickly without combinatorial explosion.</li>
         </ul>
 
         <h2>Supported components</h2>
@@ -763,20 +764,95 @@
     yield* helper(0, []);
   }
 
+  // Greedy heuristic solver for large component counts (8-30)
+  function greedySolve(components, target, tolerancePct, isResistor, maxSize) {
+    const tol = tolerancePct / 100;
+    const lower = target * (1 - tol);
+    const upper = target * (1 + tol);
+    let best = null;
+
+    function consider(topo) {
+      const eq = calcEquivalent(topo, isResistor);
+      if (!(eq >= lower && eq <= upper)) return false;
+      const error = 100 * (eq - target) / target;
+      const count = countComponents(topo);
+      if (!best || count < best.count || (count === best.count && Math.abs(error) < Math.abs(best.error))) {
+        best = { topology: flatten(topo), equivalent: eq, error, count };
+      }
+      return true;
+    }
+
+    // Strategy 1: Pure series/parallel greedy
+    for (const topoType of ['series', 'parallel']) {
+      const avail = [...components];
+      const used = [];
+      let prevDist = Infinity;
+
+      for (let step = 0; step < maxSize && avail.length > 0; step++) {
+        let bi = -1, bd = Infinity;
+        for (let j = 0; j < avail.length; j++) {
+          const vals = [...used, avail[j]];
+          const eq = calcEquivalent(makeGroup(vals, topoType), isResistor);
+          const d = Math.abs(eq - target);
+          if (d < bd) { bd = d; bi = j; }
+        }
+        if (bi === -1 || bd >= prevDist) break;
+        used.push(avail[bi]);
+        avail.splice(bi, 1);
+        prevDist = bd;
+        if (consider(makeGroup(used, topoType))) break;
+      }
+    }
+
+    // Strategy 2: Incremental mixed greedy
+    // Each step adds a component in series or parallel with the current circuit
+    const avail = [...components];
+    const usedSet = new Set();
+    let curTopo = null;
+    let prevDist = Infinity;
+
+    for (let step = 0; step < maxSize; step++) {
+      let bestTopo = null, bd = Infinity, bj = -1;
+      for (let j = 0; j < avail.length; j++) {
+        if (usedSet.has(j)) continue;
+        const node = { type: 'component', value: avail[j] };
+        const candidates = curTopo
+          ? [{ type: 'series', children: [curTopo, node] },
+             { type: 'parallel', children: [curTopo, node] }]
+          : [node];
+        for (const c of candidates) {
+          const eq = calcEquivalent(c, isResistor);
+          const d = Math.abs(eq - target);
+          if (d < bd) { bd = d; bestTopo = c; bj = j; }
+        }
+      }
+      if (bj === -1 || bd >= prevDist) break;
+      usedSet.add(bj);
+      curTopo = bestTopo;
+      prevDist = bd;
+      if (consider(curTopo)) break;
+    }
+
+    return best;
+  }
+
   function solve(components, target, tolerancePct, isResistor) {
     const tol = tolerancePct / 100;
     const lower = target * (1 - tol);
     const upper = target * (1 + tol);
     const sorted = [...components].sort((a, b) => a - b);
+    const maxSize = Math.min(sorted.length, 30);
     let best = null;
     let evals = 0;
 
-    for (let size = 1; size <= Math.min(sorted.length, 7); size++) {
+    // Phase 1: Exhaustive search for small subset sizes (1-7)
+    const exhaustiveLimit = Math.min(maxSize, 7);
+    for (let size = 1; size <= exhaustiveLimit; size++) {
       for (const subset of uniqueSubsets(sorted, size)) {
         const gen = size <= 5 ? hybridTopologies(subset) : flatMixedTopologies(subset);
         for (const topo of gen) {
           evals++;
-          if (evals > MAX_EVALS) return best;
+          if (evals > MAX_EVALS) { evals = Infinity; break; }
           const eq = calcEquivalent(topo, isResistor);
           if (eq >= lower && eq <= upper) {
             const error = 100 * (eq - target) / target;
@@ -785,8 +861,16 @@
             }
           }
         }
+        if (evals === Infinity) break;
       }
       if (best) return best; // found minimum-count solution
+      if (evals === Infinity) break;
+    }
+
+    // Phase 2: Greedy heuristic for larger sizes or when exhaustive was cut short
+    if (!best) {
+      const greedy = greedySolve(sorted, target, tolerancePct, isResistor, maxSize);
+      if (greedy) best = greedy;
     }
 
     return best;
